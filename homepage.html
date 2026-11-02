@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Splatoon 3 Hub & Loadout Randomizer</title>
+  <style>
+    :root {
+      --bg: #121216;
+      --card-bg: #1e1e26;
+      --yellow: #eaff00;
+      --purple: #9d00ff;
+      --text: #ffffff;
+      --text-muted: #a0a0b0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      color: var(--yellow);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 0px var(--purple);
+    }
+
+    header p {
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 25px;
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      border: 2px solid #2a2a36;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .card h2 {
+      font-size: 1.4rem;
+      color: var(--yellow);
+      margin-bottom: 15px;
+      border-bottom: 2px solid var(--purple);
+      padding-bottom: 8px;
+    }
+
+    /* Randomizer Styles */
+    .randomizer-results {
+      margin: 20px 0;
+    }
+
+    .result-item {
+      margin-bottom: 12px;
+    }
+
+    .result-item span {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .result-item strong {
+      font-size: 1.1rem;
+      color: #fff;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--purple);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: #7b00cc;
+    }
+
+    /* Rotation Styles */
+    .rotation-group {
+      margin-bottom: 15px;
+    }
+
+    .rotation-group h3 {
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+
+    .map-list {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .loading {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Splatoon 3 Hub</h1>
+    <p>Loadout Generator & Live Rotations</p>
+  </header>
+
+  <div class="container">
+    <!-- Randomizer Card -->
+    <div class="card">
+      <h2>Loadout Randomizer</h2>
+      <div class="randomizer-results">
+        <div class="result-item">
+          <span>Main Weapon</span>
+          <strong id="weapon">Press Generate!</strong>
+        </div>
+        <div class="result-item">
+          <span>Sub Weapon</span>
+          <strong id="sub">-</strong>
+        </div>
+        <div class="result-item">
+          <span>Special Weapon</span>
+          <strong id="special">-</strong>
+        </div>
+        <div class="result-item">
+          <span>Primary Gear Ability</span>
+          <strong id="ability">-</strong>
+        </div>
+      </div>
+      <button onclick="generateLoadout()">Generate Random Loadout</button>
+    </div>
+
+    <!-- Rotations Card -->
+    <div class="card">
+      <h2>Live Map Rotations</h2>
+      <div id="rotations" class="loading">Fetching live schedules...</div>
+    </div>
+  </div>
+
+  <script>
+    // 1. Loadout Randomizer Logic
+    const weapons = [
+      { name: "Splattershot", sub: "Splat Bomb", special: "Trizooka" },
+      { name: "Splat Roller", sub: "Curling Bomb", special: "Big Bubbler" },
+      { name: "E-liter 4K", sub: "Ink Mine", special: "Wave Breaker" },
+      { name: "Slosher", sub: "Splat Bomb", special: "Triple Inkstrike" },
+      { name: "Dualie Squelchers", sub: "Splat Bomb", special: "Wave Breaker" },
+      { name: "Splat Brella", sub: "Sprinkler", special: "Triple Inkstrike" },
+      { name: "Tri-Stringer", sub: "Toxic Mist", special: "Killer Wail 5.1" },
+      { name: "Splatana Wiper", sub: "Torpedo", special: "Ultra Stamp" }
+    ];
+
+    const abilities = [
+      "Ink Saver (Main)", "Run Speed Up", "Swim Speed Up", 
+      "Special Charge Up", "Quick Respawn", "Ninja Squid", 
+      "Stealth Jump", "Last-Ditch Effort"
+    ];
+
+    function generateLoadout() {
+      const randomWeapon = weapons[Math.floor(Math.random() * weapons.length)];
+      const randomAbility = abilities[Math.floor(Math.random() * abilities.length)];
+
+      document.getElementById('weapon').innerText = randomWeapon.name;
+      document.getElementById('sub').innerText = randomWeapon.sub;
+      document.getElementById('special').innerText = randomWeapon.special;
+      document.getElementById('ability').innerText = randomAbility;
+    }
+
+    // 2. Fetch Live Splatoon Rotations via API
+    async function fetchRotations() {
+      const container = document.getElementById('rotations');
+      try {
+        const response = await fetch('https://splatoon3.ink/data/schedules.json');
+        const data = await response.json();
+
+        const regular = data.data.regularSchedules.nodes[0].regularMatchSetting;
+        const anarchy = data.data.bankaraSchedules.nodes[0].bankaraMatchSettings[0];
+
+        container.className = "";
+        container.innerHTML = `
+          <div class="rotation-group">
+            <h3>Turf War</h3>
+            <div class="map-list">${regular.vsStages[0].name} & ${regular.vsStages[1].name}</div>
+          </div>
+          <div class="rotation-group">
+            <h3>Anarchy Series (${anarchy.vsRule.name})</h3>
+            <div class="map-list">${anarchy.vsStages[0].name} & ${anarchy.vsStages[1].name}</div>
+          </div>
+        `;
+      } catch (error) {
+        container.innerHTML = `<div class="loading">Unable to load rotations right now.</div>`;
+      }
+    }
+
+    // Run on startup
+    fetchRotations();
+  </script>
+</body>
+</html>
